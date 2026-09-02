@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>우리 반 독서 기록장</title>
+<style>
+  :root {
+    --bg: #faf6ef;
+    --card: #ffffff;
+    --ink: #2f2a22;
+    --sub: #7a715f;
+    --accent: #3f7d58;
+    --accent-dark: #2f5f43;
+    --accent-soft: #e4efe6;
+    --warn: #b85042;
+    --border: #e7ded0;
+    --shadow: 0 4px 16px rgba(63, 125, 88, 0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    min-height: 100vh;
+  }
+  .wrap {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  header .emoji { font-size: 40px; }
+  header h1 {
+    font-size: 22px;
+    margin: 8px 0 4px;
+  }
+  header p {
+    color: var(--sub);
+    font-size: 14px;
+    margin: 0;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+    margin-bottom: 16px;
+  }
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block;
+    font-size: 13px;
+    color: var(--sub);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  .field input {
+    width: 100%;
+    padding: 13px 14px;
+    font-size: 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+  }
+  .field input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--accent);
+    border-radius: 12px;
+    transition: background 0.15s;
+  }
+  .btn-primary:hover { background: var(--accent-dark); }
+  .btn-primary:disabled { background: #c8c0b0; cursor: not-allowed; }
+  .btn-stop {
+    background: var(--warn);
+  }
+  .btn-stop:hover { background: #96382d; }
+  .btn-ghost {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    color: var(--sub);
+    background: transparent;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    margin-top: 8px;
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent-dark); }
+  .hello {
+    font-size: 15px;
+    color: var(--sub);
+    margin-bottom: 2px;
+  }
+  .hello b { color: var(--ink); }
+  .stat-row {
+    display: flex;
+    gap: 12px;
+    margin: 16px 0 4px;
+  }
+  .stat {
+    flex: 1;
+    background: var(--accent-soft);
+    border-radius: 12px;
+    padding: 14px;
+    text-align: center;
+  }
+  .stat .num {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent-dark);
+  }
+  .stat .lbl {
+    font-size: 12px;
+    color: var(--sub);
+    margin-top: 2px;
+  }
+  .record-count {
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--sub);
+    margin-bottom: 4px;
+  }
+  .record-count b { color: var(--accent-dark); }
+  .timer-display {
+    text-align: center;
+    padding: 30px 0 20px;
+  }
+  .timer-display .clock {
+    font-size: 48px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--accent-dark);
+    letter-spacing: 1px;
+  }
+  .timer-display .state {
+    font-size: 13px;
+    color: var(--sub);
+    margin-top: 6px;
+  }
+  .day-list {
+    margin-top: 4px;
+  }
+  .day-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 9px 2px;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .day-row:last-child { border-bottom: none; }
+  .day-row .d { color: var(--sub); }
+  .day-row .m { font-weight: 700; }
+  .day-row.today { color: var(--accent-dark); }
+  .day-row.today .d::after {
+    content: '오늘';
+    margin-left: 6px;
+    font-size: 10px;
+    background: var(--accent);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 999px;
+    vertical-align: middle;
+  }
+  .empty {
+    text-align: center;
+    color: var(--sub);
+    font-size: 13px;
+    padding: 12px 0;
+  }
+  .msg {
+    font-size: 13px;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+  }
+  .msg.error { background: #fbe9e6; color: var(--warn); }
+  .msg.success { background: var(--accent-soft); color: var(--accent-dark); }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--sub);
+    margin: 4px 0 10px;
+  }
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: #a89f8d;
+    margin-top: auto;
+    padding-top: 20px;
+  }
+  .confirm-box {
+    text-align: center;
+  }
+  .confirm-box .big {
+    font-size: 34px;
+    font-weight: 800;
+    color: var(--accent-dark);
+    margin: 6px 0 4px;
+  }
+  .confirm-box .desc {
+    color: var(--sub);
+    font-size: 14px;
+    margin-bottom: 18px;
+  }
+  .row-btns { display: flex; gap: 10px; }
+  .row-btns button { flex: 1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="emoji">📚</div>
+    <h1>우리 반 독서 기록장</h1>
+    <p>오늘 읽은 시간을 기록해 볼까요?</p>
+  </header>
+
+  <!-- 설정 안내: 앱스스크립트 URL이 비어 있을 때 -->
+  <div id="configWarning" class="card" style="display:none; border-color:#e7c9a8;">
+    <div class="msg error" style="margin-bottom:0;">
+      아직 데이터 저장소(구글 앱스스크립트) 주소가 설정되지 않았습니다.<br>
+      이 HTML 파일 상단의 <code>APPS_SCRIPT_URL</code> 값을 배포된 웹 앱 URL로 바꿔주세요.
+    </div>
+  </div>
+
+  <!-- 1. 로그인 화면 -->
+  <div id="screenLogin" class="card">
+    <div id="loginMsg"></div>
+    <div class="field">
+      <label>학번</label>
+      <input type="text" id="inputId" inputmode="numeric" placeholder="예: 10203" maxlength="10">
+    </div>
+    <div class="field">
+      <label>이름</label>
+      <input type="text" id="inputName" placeholder="예: 홍길동" maxlength="10">
+    </div>
+    <button class="btn-primary" id="btnLogin">로그인</button>
+  </div>
+
+  <!-- 2. 홈/타이머 화면 -->
+  <div id="screenHome" class="card" style="display:none;">
+    <div class="hello">안녕하세요, <b id="helloName"></b> 학생 👋</div>
+
+    <div class="stat-row">
+      <div class="stat">
+        <div class="num" id="statToday">-</div>
+        <div class="lbl">오늘 누적</div>
+      </div>
+      <div class="stat">
+        <div class="num" id="statTotal">-</div>
+        <div class="lbl">전체 누적</div>
+      </div>
+    </div>
+    <div class="record-count">지금까지 총 <b id="statCount">-</b>번 기록했어요</div>
+
+    <div class="timer-display">
+      <div class="clock" id="clock">00:00</div>
+      <div class="state" id="timerState">읽기 시작 버튼을 눌러주세요</div>
+    </div>
+
+    <button class="btn-primary" id="btnStart">▶ 읽기 시작</button>
+    <button class="btn-primary btn-stop" id="btnStop" style="display:none;">■ 읽기 종료</button>
+
+    <div class="section-title" style="margin-top:22px;">날짜별 기록</div>
+    <div id="dayList" class="day-list"><div class="empty">아직 기록이 없어요</div></div>
+
+    <button class="btn-ghost" id="btnLogout">다른 학생으로 로그인</button>
+  </div>
+
+  <!-- 3. 종료 후 확인 화면 -->
+  <div id="screenConfirm" class="card" style="display:none;">
+    <div class="confirm-box">
+      <div>오늘 읽은 시간</div>
+      <div class="big" id="confirmMinutes">0분</div>
+      <div class="desc">이대로 저장할까요?</div>
+      <div class="row-btns">
+        <button class="btn-ghost" id="btnCancelSave">취소</button>
+        <button class="btn-primary" id="btnConfirmSave">저장하기</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>학교 독서 기록용 · 구글 시트에 자동 저장됩니다</footer>
+</div>
+
+<script>
+// ============================================================
+// ⚠️ 여기에 배포한 구글 앱스스크립트 "웹 앱 URL"을 붙여넣으세요
+// (Apps Script 편집기 > 배포 > 웹 앱으로 배포 후 생성되는 주소, .../exec 로 끝남)
+// ============================================================
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby9WWlcAKP7u-9ZB71e_-SkPBgfzp2N0XF1OunTD9ZhA6ro0_S_l65Yo1F9cYEt-zF2kg/exec';
+
+let student = null;          // { id, name }
+let timerStart = null;       // Date.now() (ms)
+let timerInterval = null;
+let pendingMinutes = 0;
+let pendingStartTime = null;
+let pendingEndTime = null;
+
+const $ = (id) => document.getElementById(id);
+const screens = ['screenLogin', 'screenHome', 'screenConfirm'];
+function showScreen(id) {
+  screens.forEach(s => $(s).style.display = (s === id ? 'block' : 'none'));
+}
+
+function checkConfig() {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('여기에_배포_URL') !== -1) {
+    $('configWarning').style.display = 'block';
+    return false;
+  }
+  return true;
+}
+
+function todayStr() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+}
+function timeStr(d) {
+  const pad = (n) => String(n).padStart(2, '0');
+  return pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds());
+}
+function fmtMinutes(total) {
+  const h = Math.floor(total / 60), m = total % 60;
+  return h > 0 ? (h + '시간 ' + m + '분') : (m + '분');
+}
+
+// ---------- 로그인 ----------
+$('btnLogin').addEventListener('click', async () => {
+  const id = $('inputId').value.trim();
+  const name = $('inputName').value.trim();
+  $('loginMsg').innerHTML = '';
+
+  if (!id || !name) {
+    $('loginMsg').innerHTML = '<div class="msg error">학번과 이름을 모두 입력해주세요.</div>';
+    return;
+  }
+  if (!checkConfig()) return;
+
+  $('btnLogin').disabled = true;
+  $('btnLogin').textContent = '확인 중...';
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + '?studentId=' + encodeURIComponent(id) + '&name=' + encodeURIComponent(name));
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '알 수 없는 오류');
+
+    student = { id, name };
+    $('helloName').textContent = name;
+    renderStats(data);
+    resetTimerUI();
+    showScreen('screenHome');
+  } catch (err) {
+    $('loginMsg').innerHTML = '<div class="msg error">데이터를 불러오지 못했습니다. 인터넷 연결과 설정을 확인해주세요.<br><span style="font-size:11px;">(' + err.message + ')</span></div>';
+  } finally {
+    $('btnLogin').disabled = false;
+    $('btnLogin').textContent = '로그인';
+  }
+});
+
+function renderStats(data) {
+  const today = todayStr();
+  const days = data.days || [];
+  const todayEntry = days.find(d => d.date === today);
+
+  $('statToday').textContent = fmtMinutes(todayEntry ? todayEntry.minutes : 0);
+  $('statTotal').textContent = fmtMinutes(data.totalMinutes || 0);
+  $('statCount').textContent = (data.sessionCount || 0);
+
+  const list = $('dayList');
+  if (days.length === 0) {
+    list.innerHTML = '<div class="empty">아직 기록이 없어요</div>';
+    return;
+  }
+  list.innerHTML = days.slice().reverse().map(d =>
+    '<div class="day-row' + (d.date === today ? ' today' : '') + '"><span class="d">' + d.date + '</span><span class="m">' + fmtMinutes(d.minutes) + '</span></div>'
+  ).join('');
+}
+
+$('btnLogout').addEventListener('click', () => {
+  student = null;
+  stopTimerInterval();
+  $('inputId').value = '';
+  $('inputName').value = '';
+  $('loginMsg').innerHTML = '';
+  showScreen('screenLogin');
+});
+
+// ---------- 타이머 ----------
+function resetTimerUI() {
+  $('clock').textContent = '00:00';
+  $('timerState').textContent = '읽기 시작 버튼을 눌러주세요';
+  $('btnStart').style.display = 'block';
+  $('btnStop').style.display = 'none';
+}
+
+$('btnStart').addEventListener('click', () => {
+  timerStart = Date.now();
+  pendingStartTime = timeStr(new Date());
+  $('btnStart').style.display = 'none';
+  $('btnStop').style.display = 'block';
+  $('timerState').textContent = '독서 중이에요. 다 읽으면 종료를 눌러주세요.';
+  timerInterval = setInterval(updateClock, 1000);
+});
+
+function updateClock() {
+  const elapsed = Math.floor((Date.now() - timerStart) / 1000);
+  const m = Math.floor(elapsed / 60), s = elapsed % 60;
+  $('clock').textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+}
+
+function stopTimerInterval() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+}
+
+$('btnStop').addEventListener('click', () => {
+  stopTimerInterval();
+  const elapsedMs = Date.now() - timerStart;
+  pendingEndTime = timeStr(new Date());
+  pendingMinutes = Math.max(1, Math.round(elapsedMs / 60000)); // 최소 1분
+
+  $('confirmMinutes').textContent = pendingMinutes + '분';
+  showScreen('screenConfirm');
+});
+
+$('btnCancelSave').addEventListener('click', () => {
+  showScreen('screenHome');
+  resetTimerUI();
+});
+
+$('btnConfirmSave').addEventListener('click', async () => {
+  $('btnConfirmSave').disabled = true;
+  $('btnConfirmSave').textContent = '저장 중...';
+  try {
+    const payload = {
+      studentId: student.id,
+      name: student.name,
+      date: todayStr(),
+      startTime: pendingStartTime,
+      endTime: pendingEndTime,
+      minutes: pendingMinutes
+    };
+    // Content-Type을 text/plain으로 보내 Apps Script의 CORS preflight 문제를 피함
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || '저장 실패');
+
+    // 최신 누적 정보 다시 불러오기
+    const res2 = await fetch(APPS_SCRIPT_URL + '?studentId=' + encodeURIComponent(student.id) + '&name=' + encodeURIComponent(student.name));
+    const data2 = await res2.json();
+    renderStats(data2);
+
+    resetTimerUI();
+    showScreen('screenHome');
+  } catch (err) {
+    alert('저장 중 문제가 발생했어요. 다시 시도해주세요.\n(' + err.message + ')');
+  } finally {
+    $('btnConfirmSave').disabled = false;
+    $('btnConfirmSave').textContent = '저장하기';
+  }
+});
+
+// 초기 설정 점검
+checkConfig();
+showScreen('screenLogin');
+</script>
+</body>
+</html>
