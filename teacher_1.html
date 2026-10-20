@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>독서 기록 확인 (교사용)</title>
+<style>
+  :root {
+    --bg: #faf6ef;
+    --card: #ffffff;
+    --ink: #2f2a22;
+    --sub: #7a715f;
+    --accent: #3f7d58;
+    --accent-dark: #2f5f43;
+    --accent-soft: #e4efe6;
+    --warn: #b85042;
+    --border: #e7ded0;
+    --shadow: 0 4px 16px rgba(63, 125, 88, 0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    min-height: 100vh;
+  }
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+  header { text-align: center; margin-bottom: 20px; }
+  header .emoji { font-size: 36px; }
+  header h1 { font-size: 20px; margin: 8px 0 4px; }
+  header p { color: var(--sub); font-size: 13px; margin: 0; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+  }
+
+  .field input {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 15px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+  }
+  .field input:focus { outline: none; border-color: var(--accent); }
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-primary {
+    width: 100%;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    background: var(--accent);
+    border-radius: 10px;
+    margin-top: 10px;
+  }
+  .btn-primary:hover { background: var(--accent-dark); }
+  .btn-primary:disabled { background: #c8c0b0; cursor: not-allowed; }
+
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .toolbar input {
+    flex: 1;
+    padding: 11px 14px;
+    font-size: 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+  }
+  .toolbar select {
+    padding: 11px 10px;
+    font-size: 13px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+    color: var(--ink);
+  }
+  .summary-bar {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12.5px;
+    color: var(--sub);
+    padding: 0 2px 10px;
+  }
+  .summary-bar b { color: var(--accent-dark); }
+
+  .student-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .student-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    cursor: pointer;
+  }
+  .student-head:hover { background: #fbf9f4; }
+  .student-id-name {
+    display: flex;
+    flex-direction: column;
+  }
+  .student-id-name .nm { font-weight: 700; font-size: 15px; }
+  .student-id-name .id { font-size: 12px; color: var(--sub); margin-top: 1px; }
+  .student-stats {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .student-stats .st {
+    text-align: right;
+  }
+  .student-stats .st .num { font-weight: 800; color: var(--accent-dark); font-size: 15px; }
+  .student-stats .st .lbl { font-size: 10.5px; color: var(--sub); }
+  .caret { color: var(--sub); font-size: 12px; margin-left: 4px; transition: transform 0.15s; }
+  .student-card.open .caret { transform: rotate(180deg); }
+
+  .student-detail {
+    display: none;
+    border-top: 1px solid var(--border);
+    padding: 4px 16px 14px;
+  }
+  .student-card.open .student-detail { display: block; }
+  .day-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 2px;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  .day-row:last-child { border-bottom: none; }
+  .day-row .d { color: var(--sub); }
+  .day-row .m { font-weight: 700; }
+  .day-row.today .d::after {
+    content: '오늘';
+    margin-left: 6px;
+    font-size: 10px;
+    background: var(--accent);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 999px;
+  }
+
+  .empty {
+    text-align: center;
+    color: var(--sub);
+    font-size: 13px;
+    padding: 30px 0;
+  }
+  .msg {
+    font-size: 13px;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+  }
+  .msg.error { background: #fbe9e6; color: var(--warn); }
+
+  footer {
+    text-align: center;
+    font-size: 11.5px;
+    color: #a89f8d;
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="emoji">🧑‍🏫</div>
+    <h1>독서 기록 확인 (교사용)</h1>
+    <p>학생별 전체 누적 · 날짜별 독서시간을 한눈에 확인합니다</p>
+  </header>
+
+  <!-- 설정 안내 -->
+  <div id="configWarning" class="card" style="display:none; border-color:#e7c9a8;">
+    <div class="msg error" style="margin-bottom:0;">
+      이 HTML 파일 상단의 <code>APPS_SCRIPT_URL</code> 값을 배포된 웹 앱 URL로 바꿔주세요.
+    </div>
+  </div>
+
+  <!-- 암호 입력 화면 -->
+  <div id="screenAuth" class="card">
+    <div id="authMsg"></div>
+    <div class="field">
+      <label style="display:block;font-size:13px;color:var(--sub);margin-bottom:6px;font-weight:600;">확인용 암호</label>
+      <input type="password" id="inputKey" placeholder="Code.gs의 TEACHER_KEY와 동일한 값">
+    </div>
+    <button class="btn-primary" id="btnAuth">불러오기</button>
+  </div>
+
+  <!-- 목록 화면 -->
+  <div id="screenList" style="display:none;">
+    <div class="toolbar">
+      <input type="text" id="searchBox" placeholder="학번 또는 이름으로 검색">
+      <select id="sortSelect">
+        <option value="id">학번순</option>
+        <option value="name">이름순</option>
+        <option value="total">누적시간순</option>
+        <option value="today">오늘순</option>
+      </select>
+    </div>
+    <div class="summary-bar">
+      <span>전체 <b id="countAll">0</b>명</span>
+      <span>오늘 기록한 학생 <b id="countToday">0</b>명</span>
+      <button id="btnRefresh" style="border:none;background:none;color:var(--accent-dark);font-size:12.5px;font-weight:700;cursor:pointer;">↻ 새로고침</button>
+    </div>
+    <div id="studentList"></div>
+  </div>
+
+  <footer>학교 독서 기록용 · 구글 시트의 "기록" 시트를 실시간으로 집계합니다</footer>
+</div>
+
+<script>
+// ============================================================
+// ⚠️ 학생용 앱(독서기록장.html / index.html)과 동일한 웹 앱 URL을 붙여넣으세요
+// ============================================================
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby9WWlcAKP7u-9ZB71e_-SkPBgfzp2N0XF1OunTD9ZhA6ro0_S_l65Yo1F9cYEt-zF2kg/exec';
+
+let rawStudents = [];
+let teacherKey = '';
+
+const $ = (id) => document.getElementById(id);
+
+function checkConfig() {
+  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf('여기에_배포_URL') !== -1) {
+    $('configWarning').style.display = 'block';
+    return false;
+  }
+  return true;
+}
+
+function todayStr() {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+}
+function fmtMinutes(total) {
+  const h = Math.floor(total / 60), m = total % 60;
+  return h > 0 ? (h + '시간 ' + m + '분') : (m + '분');
+}
+function todayMinutesOf(student) {
+  const t = todayStr();
+  const found = (student.days || []).find(d => d.date === t);
+  return found ? found.minutes : 0;
+}
+
+async function fetchJson(url) {
+  const res = await fetch(url);
+  const text = await res.text();
+  try { return JSON.parse(text); }
+  catch (e) {
+    const snippet = text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 160);
+    throw new Error('JSON이 아닌 응답(HTTP ' + res.status + ', 최종주소: ' + res.url.slice(0, 60) + '...): ' + snippet);
+  }
+}
+
+// ---------- 암호 확인 & 데이터 로드 ----------
+$('btnAuth').addEventListener('click', loadData);
+$('inputKey').addEventListener('keydown', (e) => { if (e.key === 'Enter') loadData(); });
+
+async function loadData() {
+  if (!checkConfig()) return;
+  const key = $('inputKey').value.trim();
+  if (!key) {
+    $('authMsg').innerHTML = '<div class="msg error">암호를 입력해주세요.</div>';
+    return;
+  }
+  $('authMsg').innerHTML = '';
+  $('btnAuth').disabled = true;
+  $('btnAuth').textContent = '불러오는 중...';
+
+  try {
+    const data = await fetchJson(APPS_SCRIPT_URL + '?mode=teacher&key=' + encodeURIComponent(key));
+    if (!data.ok) throw new Error(data.error || '알 수 없는 오류');
+
+    teacherKey = key;
+    rawStudents = data.students || [];
+    $('screenAuth').style.display = 'none';
+    $('screenList').style.display = 'block';
+    renderList();
+  } catch (err) {
+    $('authMsg').innerHTML = '<div class="msg error">불러오지 못했습니다.<br><span style="font-size:11px;">(' + err.message + ')</span></div>';
+  } finally {
+    $('btnAuth').disabled = false;
+    $('btnAuth').textContent = '불러오기';
+  }
+}
+
+$('btnRefresh').addEventListener('click', async () => {
+  $('btnRefresh').textContent = '불러오는 중...';
+  try {
+    const data = await fetchJson(APPS_SCRIPT_URL + '?mode=teacher&key=' + encodeURIComponent(teacherKey));
+    if (data.ok) { rawStudents = data.students || []; renderList(); }
+  } finally {
+    $('btnRefresh').textContent = '↻ 새로고침';
+  }
+});
+
+$('searchBox').addEventListener('input', renderList);
+$('sortSelect').addEventListener('change', renderList);
+
+function renderList() {
+  const q = $('searchBox').value.trim().toLowerCase();
+  const sortBy = $('sortSelect').value;
+
+  let list = rawStudents.filter(s =>
+    !q || s.name.toLowerCase().includes(q) || String(s.id).toLowerCase().includes(q)
+  );
+
+  if (sortBy === 'id') list.sort((a, b) => String(a.id).localeCompare(String(b.id), 'ko'));
+  else if (sortBy === 'name') list.sort((a, b) => String(a.name).localeCompare(String(b.name), 'ko'));
+  else if (sortBy === 'total') list.sort((a, b) => b.totalMinutes - a.totalMinutes);
+  else if (sortBy === 'today') list.sort((a, b) => todayMinutesOf(b) - todayMinutesOf(a));
+
+  $('countAll').textContent = rawStudents.length;
+  $('countToday').textContent = rawStudents.filter(s => todayMinutesOf(s) > 0).length;
+
+  const container = $('studentList');
+  if (list.length === 0) {
+    container.innerHTML = '<div class="empty">조건에 맞는 학생이 없어요</div>';
+    return;
+  }
+
+  container.innerHTML = list.map((s, idx) => {
+    const today = todayStr();
+    const dayRows = (s.days || []).slice().reverse().map(d =>
+      '<div class="day-row' + (d.date === today ? ' today' : '') + '"><span class="d">' + d.date + '</span><span class="m">' + fmtMinutes(d.minutes) + '</span></div>'
+    ).join('') || '<div class="empty" style="padding:10px 0;">기록 없음</div>';
+
+    return '<div class="student-card" data-idx="' + idx + '">' +
+      '<div class="student-head">' +
+        '<div class="student-id-name"><span class="nm">' + escapeHtml(s.name) + '</span><span class="id">학번 ' + escapeHtml(s.id) + '</span></div>' +
+        '<div class="student-stats">' +
+          '<div class="st"><div class="num">' + fmtMinutes(todayMinutesOf(s)) + '</div><div class="lbl">오늘</div></div>' +
+          '<div class="st"><div class="num">' + fmtMinutes(s.totalMinutes) + '</div><div class="lbl">전체</div></div>' +
+          '<span class="caret">▼</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="student-detail">' + dayRows + '</div>' +
+    '</div>';
+  }).join('');
+
+  container.querySelectorAll('.student-head').forEach(head => {
+    head.addEventListener('click', () => {
+      head.parentElement.classList.toggle('open');
+    });
+  });
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+checkConfig();
+</script>
+</body>
+</html>
